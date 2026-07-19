@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase'
 import Auth from './components/Auth'
 import ApplicationForm from './components/ApplicationForm'
 import ApplicationList from './components/ApplicationList'
+import Analytics from './components/Analytics'
 import type { Session } from '@supabase/supabase-js'
 import type { Application } from './lib/types'
 
@@ -86,6 +87,8 @@ function App() {
 
       {workspaceId ? (
         <>
+        
+          <Analytics applications={applications} />
           <ApplicationForm
             workspaceId={workspaceId}
             userId={session.user.id}
