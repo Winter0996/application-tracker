@@ -1,18 +1,38 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import type { Application } from '../lib/types'
+import {
+  PieChart,
+  Pie,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts'
+import type { Application, ApplicationStatus } from '../lib/types'
 import { STATUS_LABELS, STATUS_ORDER } from '../lib/types'
 
 interface Props {
   applications: Application[]
 }
 
+const STATUS_COLORS: Record<ApplicationStatus, string> = {
+  applied: '#2a78d6',
+  screen: '#eb6834',
+  technical: '#1baf7a',
+  offer: '#eda100',
+  rejected: '#898781',
+}
+
 export default function Analytics({ applications }: Props) {
   const total = applications.length
 
   const statusCounts = STATUS_ORDER.map((status) => ({
-    status: STATUS_LABELS[status],
+    status,
+    label: STATUS_LABELS[status],
     count: applications.filter((a) => a.status === status).length,
-  }))
+    fill: STATUS_COLORS[status],
+  })).filter((s) => s.count > 0)
 
   const respondedCount = applications.filter((a) => a.status !== 'applied').length
   const interviewCount = applications.filter(
@@ -23,6 +43,22 @@ export default function Analytics({ applications }: Props) {
   const responseRate = total > 0 ? Math.round((respondedCount / total) * 100) : 0
   const interviewRate = total > 0 ? Math.round((interviewCount / total) * 100) : 0
   const offerRate = total > 0 ? Math.round((offerCount / total) * 100) : 0
+
+  // Group applications by week (based on applied_date) for the trend line
+  const weeklyMap = new Map<string, number>()
+  applications.forEach((app) => {
+    const date = new Date(app.applied_date)
+    const weekStart = new Date(date)
+    weekStart.setDate(date.getDate() - date.getDay())
+    const key = weekStart.toISOString().split('T')[0]
+    weeklyMap.set(key, (weeklyMap.get(key) || 0) + 1)
+  })
+  const weeklyData = Array.from(weeklyMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([week, count]) => ({
+      week: new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      count,
+    }))
 
   if (total === 0) {
     return (
@@ -42,15 +78,50 @@ export default function Analytics({ applications }: Props) {
         <StatCard label="Offer rate" value={`${offerRate}%`} />
       </div>
 
-      <div className="h-64 border rounded-lg p-4">
+      <p className="text-sm text-gray-600 mb-2">Pipeline breakdown</p>
+      <div className="h-56 border rounded-lg p-4 mb-6">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={statusCounts}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="status" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} />
+          <PieChart>
+            <Pie
+              data={statusCounts}
+              dataKey="count"
+              nameKey="label"
+              innerRadius={50}
+              outerRadius={80}
+              paddingAngle={2}
+            />
             <Tooltip />
-            <Bar dataKey="count" fill="#000000" radius={[4, 4, 0, 0]} />
-          </BarChart>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex flex-wrap gap-3 mb-8 text-xs text-gray-600">
+        {statusCounts.map((entry) => (
+          <span key={entry.status} className="flex items-center gap-1">
+            <span
+              className="w-2.5 h-2.5 rounded-sm inline-block"
+              style={{ backgroundColor: STATUS_COLORS[entry.status] }}
+            />
+            {entry.label} ({entry.count})
+          </span>
+        ))}
+      </div>
+
+      <p className="text-sm text-gray-600 mb-2">Applications per week</p>
+      <div className="h-56 border rounded-lg p-4">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={weeklyData}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="#2a78d6"
+              strokeWidth={2}
+              dot={{ r: 4, fill: '#2a78d6' }}
+            />
+          </LineChart>
         </ResponsiveContainer>
       </div>
     </div>
