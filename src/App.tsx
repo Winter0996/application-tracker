@@ -5,13 +5,15 @@ import ApplicationForm from './components/ApplicationForm'
 import ApplicationList from './components/ApplicationList'
 import Analytics from './components/Analytics'
 import type { Session } from '@supabase/supabase-js'
-import type { Application } from './lib/types'
+import type { Application, Reminder } from './lib/types'
+
 
 type WorkspaceRole = 'owner' | 'advisor' | 'member'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reminders, setReminders] = useState<Reminder[]>([])
   const [workspaceId, setWorkspaceId] = useState<string | null>(null)
   const [role, setRole] = useState<WorkspaceRole | null>(null)
   const [applications, setApplications] = useState<Application[]>([])
@@ -58,6 +60,7 @@ function App() {
       console.log('Detected role:', memberRow.role, 'for workspace:', memberRow.workspace_id)
       await loadApplications()
       await loadProfiles()
+      await loadReminders()  
     }
 
     loadWorkspaceAndApplications()
@@ -77,6 +80,17 @@ function App() {
     setApplications(data as Application[])
   }
 
+  async function loadReminders() {
+    const { data, error } = await supabase.from('reminders').select('*')
+  
+    if (error) {
+      console.error('Failed to load reminders:', error)
+      return
+    }
+  
+    setReminders(data as Reminder[])
+  }
+
   async function loadProfiles() {
     const { data, error } = await supabase.from('profiles').select('id, email')
 
@@ -90,6 +104,7 @@ function App() {
       map[p.id] = p.email
     })
     setProfileMap(map)
+    console.log('Profile map loaded:', map)
   }
 
   if (loading) return <p className="text-center mt-20">Loading...</p>
@@ -132,6 +147,8 @@ function App() {
             onChanged={loadApplications}
             isAdvisor={isAdvisor}
             profileMap={profileMap}
+            reminders={reminders}
+            onReminderChanged={loadReminders}
           />
         </>
       ) : (

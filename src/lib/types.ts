@@ -17,6 +17,14 @@ export interface Application {
   created_at: string
 }
 
+export interface Reminder {
+  id: string
+  application_id: string
+  remind_at: string
+  sent_at: string | null
+  message: string | null
+}
+
 export const STATUS_LABELS: Record<ApplicationStatus, string> = {
   applied: 'Applied',
   screen: 'Recruiter Screen',
