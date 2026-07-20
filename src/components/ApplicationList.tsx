@@ -5,9 +5,16 @@ import { STATUS_LABELS, STATUS_ORDER } from '../lib/types'
 interface Props {
   applications: Application[]
   onChanged: () => void
+  isAdvisor: boolean
+  profileMap: Record<string, string>
 }
 
-export default function ApplicationList({ applications, onChanged }: Props) {
+export default function ApplicationList({
+  applications,
+  onChanged,
+  isAdvisor,
+  profileMap,
+}: Props) {
   async function updateStatus(id: string, status: ApplicationStatus) {
     const { error } = await supabase
       .from('applications')
@@ -30,6 +37,7 @@ export default function ApplicationList({ applications, onChanged }: Props) {
     <table className="w-full border-collapse">
       <thead>
         <tr className="text-left border-b">
+          {isAdvisor && <th className="py-2">Applicant</th>}
           <th className="py-2">Company</th>
           <th className="py-2">Role</th>
           <th className="py-2">Applied</th>
@@ -39,6 +47,11 @@ export default function ApplicationList({ applications, onChanged }: Props) {
       <tbody>
         {applications.map((app) => (
           <tr key={app.id} className="border-b">
+            {isAdvisor && (
+              <td className="py-2 text-sm text-gray-600">
+                {profileMap[app.owner_user_id] || 'Unknown'}
+              </td>
+            )}
             <td className="py-2">{app.company}</td>
             <td className="py-2">{app.role}</td>
             <td className="py-2">{app.applied_date}</td>

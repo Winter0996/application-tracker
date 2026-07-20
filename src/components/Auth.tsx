@@ -5,6 +5,8 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(true)
+  const [joinMode, setJoinMode] = useState<'new' | 'existing'>('new')
+  const [existingWorkspaceId, setExistingWorkspaceId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,8 +26,32 @@ export default function Auth() {
       return
     }
 
-    // Create a personal workspace for this new user
-    if (data.user) {
+    if (!data.user) {
+      setLoading(false)
+      return
+    }
+
+    if (joinMode === 'existing') {
+      if (!existingWorkspaceId.trim()) {
+        setError('Please enter a workspace ID to join.')
+        setLoading(false)
+        return
+      }
+
+      const { error: memberError } = await supabase
+        .from('workspace_members')
+        .insert({
+          workspace_id: existingWorkspaceId.trim(),
+          user_id: data.user.id,
+          role: 'advisor',
+        })
+
+      if (memberError) {
+        setError(`Could not join workspace: ${memberError.message}`)
+        setLoading(false)
+        return
+      }
+    } else {
       const { data: workspace, error: workspaceError } = await supabase
         .from('workspaces')
         .insert({ name: `${email}'s Workspace` })
@@ -38,7 +64,6 @@ export default function Auth() {
         return
       }
 
-      // Add the user as 'owner' of their new workspace
       const { error: memberError } = await supabase
         .from('workspace_members')
         .insert({
@@ -79,6 +104,30 @@ export default function Auth() {
       <h1 className="text-xl font-semibold mb-4">
         {isSignUp ? 'Create an account' : 'Log in'}
       </h1>
+
+      {isSignUp && (
+        <div className="flex gap-2 mb-4 text-sm">
+          <button
+            type="button"
+            onClick={() => setJoinMode('new')}
+            className={`flex-1 border rounded px-2 py-1 ${
+              joinMode === 'new' ? 'bg-black text-white' : ''
+            }`}
+          >
+            New workspace
+          </button>
+          <button
+            type="button"
+            onClick={() => setJoinMode('existing')}
+            className={`flex-1 border rounded px-2 py-1 ${
+              joinMode === 'existing' ? 'bg-black text-white' : ''
+            }`}
+          >
+            Join existing
+          </button>
+        </div>
+      )}
+
       <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-3">
         <input
           type="email"
@@ -97,6 +146,16 @@ export default function Auth() {
           required
           minLength={6}
         />
+        {isSignUp && joinMode === 'existing' && (
+          <input
+            type="text"
+            placeholder="Workspace ID to join"
+            value={existingWorkspaceId}
+            onChange={(e) => setExistingWorkspaceId(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            required
+          />
+        )}
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
