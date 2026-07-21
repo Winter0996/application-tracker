@@ -1,8 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-
-export const config = {
-  runtime: 'nodejs',
-}
+import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 interface DueReminder {
   id: string
@@ -15,10 +12,11 @@ interface DueReminder {
   }
 }
 
-export default async function handler(req: Request): Promise<Response> {
-  const authHeader = req.headers.get('authorization')
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const authHeader = req.headers.authorization
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 })
+    res.status(401).json({ error: 'Unauthorized' })
+    return
   }
 
   const supabase = createClient(
@@ -33,11 +31,13 @@ export default async function handler(req: Request): Promise<Response> {
     .is('sent_at', null)
 
   if (fetchError) {
-    return Response.json({ error: fetchError.message }, { status: 500 })
+    res.status(500).json({ error: fetchError.message })
+    return
   }
 
   if (!dueReminders || dueReminders.length === 0) {
-    return Response.json({ sent: 0, message: 'No due reminders' })
+    res.status(200).json({ sent: 0, message: 'No due reminders' })
+    return
   }
 
   let sentCount = 0
@@ -87,5 +87,5 @@ export default async function handler(req: Request): Promise<Response> {
     sentCount++
   }
 
-  return Response.json({ sent: sentCount, errors: errors })
+  res.status(200).json({ sent: sentCount, errors: errors })
 }
