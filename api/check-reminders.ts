@@ -45,13 +45,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   for (const reminder of dueReminders as unknown as DueReminder[]) {
     const application = reminder.applications
-
-    const { data: profile } = await supabase
+  
+    console.log('DEBUG reminder:', JSON.stringify(reminder))
+    console.log('DEBUG application:', JSON.stringify(application))
+  
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('email')
       .eq('id', application.owner_user_id)
       .single()
-
+  
+    console.log('DEBUG profile:', JSON.stringify(profile), 'error:', JSON.stringify(profileError))
+  
     if (!profile || !profile.email) {
       errors.push('No profile email found for reminder ' + reminder.id)
       continue
