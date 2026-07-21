@@ -46,8 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   for (const reminder of dueReminders as unknown as DueReminder[]) {
     const application = reminder.applications
   
-    console.log('DEBUG reminder:', JSON.stringify(reminder))
-    console.log('DEBUG application:', JSON.stringify(application))
+    
   
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
