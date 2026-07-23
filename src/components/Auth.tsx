@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import ThemeToggle from './ThemeToggle'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -15,10 +16,7 @@ export default function Auth() {
     setLoading(true)
     setError(null)
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
 
     if (signUpError) {
       setError(signUpError.message)
@@ -38,13 +36,11 @@ export default function Auth() {
         return
       }
 
-      const { error: memberError } = await supabase
-        .from('workspace_members')
-        .insert({
-          workspace_id: existingWorkspaceId.trim(),
-          user_id: data.user.id,
-          role: 'advisor',
-        })
+      const { error: memberError } = await supabase.from('workspace_members').insert({
+        workspace_id: existingWorkspaceId.trim(),
+        user_id: data.user.id,
+        role: 'advisor',
+      })
 
       if (memberError) {
         setError(`Could not join workspace: ${memberError.message}`)
@@ -64,13 +60,11 @@ export default function Auth() {
         return
       }
 
-      const { error: memberError } = await supabase
-        .from('workspace_members')
-        .insert({
-          workspace_id: workspace.id,
-          user_id: data.user.id,
-          role: 'owner',
-        })
+      const { error: memberError } = await supabase.from('workspace_members').insert({
+        workspace_id: workspace.id,
+        user_id: data.user.id,
+        role: 'owner',
+      })
 
       if (memberError) {
         setError(`Workspace created, but membership failed: ${memberError.message}`)
@@ -87,10 +81,7 @@ export default function Auth() {
     setLoading(true)
     setError(null)
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (signInError) {
       setError(signInError.message)
@@ -100,77 +91,95 @@ export default function Auth() {
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-20 p-6 border rounded-lg">
-      <h1 className="text-xl font-semibold mb-4">
-        {isSignUp ? 'Create an account' : 'Log in'}
-      </h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">ApplyFlow</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Track your job search, all in one place
+          </p>
+        </div>
 
-      {isSignUp && (
-        <div className="flex gap-2 mb-4 text-sm">
+        <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {isSignUp ? 'Create an account' : 'Log in'}
+            </h2>
+            <ThemeToggle compact />
+          </div>
+
+          {isSignUp && (
+            <div className="flex gap-2 mb-4 text-sm">
+              <button
+                type="button"
+                onClick={() => setJoinMode('new')}
+                className={`flex-1 border rounded-lg px-2 py-1.5 transition-colors ${
+                  joinMode === 'new'
+                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white'
+                    : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                New workspace
+              </button>
+              <button
+                type="button"
+                onClick={() => setJoinMode('existing')}
+                className={`flex-1 border rounded-lg px-2 py-1.5 transition-colors ${
+                  joinMode === 'existing'
+                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white'
+                    : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                Join existing
+              </button>
+            </div>
+          )}
+
+          <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white"
+              required
+              minLength={6}
+            />
+            {isSignUp && joinMode === 'existing' && (
+              <input
+                type="text"
+                placeholder="Workspace ID to join"
+                value={existingWorkspaceId}
+                onChange={(e) => setExistingWorkspaceId(e.target.value)}
+                className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white"
+                required
+              />
+            )}
+            {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg px-3 py-2 font-medium disabled:opacity-50 hover:opacity-90 transition-opacity"
+            >
+              {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Log in'}
+            </button>
+          </form>
           <button
-            type="button"
-            onClick={() => setJoinMode('new')}
-            className={`flex-1 border rounded px-2 py-1 ${
-              joinMode === 'new' ? 'bg-black text-white' : ''
-            }`}
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm text-blue-600 dark:text-blue-400 mt-4 underline block mx-auto"
           >
-            New workspace
-          </button>
-          <button
-            type="button"
-            onClick={() => setJoinMode('existing')}
-            className={`flex-1 border rounded px-2 py-1 ${
-              joinMode === 'existing' ? 'bg-black text-white' : ''
-            }`}
-          >
-            Join existing
+            {isSignUp ? 'Already have an account? Log in' : "Need an account? Sign up"}
           </button>
         </div>
-      )}
-
-      <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-3">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-          minLength={6}
-        />
-        {isSignUp && joinMode === 'existing' && (
-          <input
-            type="text"
-            placeholder="Workspace ID to join"
-            value={existingWorkspaceId}
-            onChange={(e) => setExistingWorkspaceId(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-        )}
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white rounded px-3 py-2 disabled:opacity-50"
-        >
-          {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Log in'}
-        </button>
-      </form>
-      <button
-        onClick={() => setIsSignUp(!isSignUp)}
-        className="text-sm text-blue-600 mt-3 underline"
-      >
-        {isSignUp ? 'Already have an account? Log in' : "Need an account? Sign up"}
-      </button>
+      </div>
     </div>
   )
 }

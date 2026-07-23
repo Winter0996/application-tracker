@@ -60,79 +60,79 @@ export default function Analytics({ applications }: Props) {
       count,
     }))
 
-  if (total === 0) {
+    if (total === 0) {
+      return (
+        <div className="mb-8 p-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg text-gray-500 dark:text-gray-400">
+          Add a few applications to see your analytics here.
+        </div>
+      )
+    }
+  
     return (
-      <div className="mb-8 p-4 border rounded-lg text-gray-500">
-        Add a few applications to see your analytics here.
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Analytics</h2>
+  
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <StatCard label="Response rate" value={`${responseRate}%`} />
+          <StatCard label="Interview rate" value={`${interviewRate}%`} />
+          <StatCard label="Offer rate" value={`${offerRate}%`} />
+        </div>
+  
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Pipeline breakdown</p>
+        <div className="h-56 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg p-4 mb-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={statusCounts}
+                dataKey="count"
+                nameKey="label"
+                innerRadius={50}
+                outerRadius={80}
+                paddingAngle={2}
+              />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex flex-wrap gap-3 mb-8 text-xs text-gray-600 dark:text-gray-400">
+          {statusCounts.map((entry) => (
+            <span key={entry.status} className="flex items-center gap-1">
+              <span
+                className="w-2.5 h-2.5 rounded-sm inline-block"
+                style={{ backgroundColor: STATUS_COLORS[entry.status] }}
+              />
+              {entry.label} ({entry.count})
+            </span>
+          ))}
+        </div>
+  
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Applications per week</p>
+        <div className="h-56 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg p-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={weeklyData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="#2a78d6"
+                strokeWidth={2}
+                dot={{ r: 4, fill: '#2a78d6' }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="mb-8">
-      <h2 className="text-lg font-semibold mb-3">Analytics</h2>
-
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <StatCard label="Response rate" value={`${responseRate}%`} />
-        <StatCard label="Interview rate" value={`${interviewRate}%`} />
-        <StatCard label="Offer rate" value={`${offerRate}%`} />
-      </div>
-
-      <p className="text-sm text-gray-600 mb-2">Pipeline breakdown</p>
-      <div className="h-56 border rounded-lg p-4 mb-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={statusCounts}
-              dataKey="count"
-              nameKey="label"
-              innerRadius={50}
-              outerRadius={80}
-              paddingAngle={2}
-            />
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="flex flex-wrap gap-3 mb-8 text-xs text-gray-600">
-        {statusCounts.map((entry) => (
-          <span key={entry.status} className="flex items-center gap-1">
-            <span
-              className="w-2.5 h-2.5 rounded-sm inline-block"
-              style={{ backgroundColor: STATUS_COLORS[entry.status] }}
-            />
-            {entry.label} ({entry.count})
-          </span>
-        ))}
-      </div>
-
-      <p className="text-sm text-gray-600 mb-2">Applications per week</p>
-      <div className="h-56 border rounded-lg p-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={weeklyData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="count"
-              stroke="#2a78d6"
-              strokeWidth={2}
-              dot={{ r: 4, fill: '#2a78d6' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  )
-}
-
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border rounded-lg p-4 text-center">
-      <p className="text-2xl font-semibold">{value}</p>
-      <p className="text-sm text-gray-600">{label}</p>
+    <div className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
+      <p className="text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
     </div>
   )
 }
