@@ -132,6 +132,7 @@ function App() {
         userEmail={session.user.email ?? ''}
         isAdvisor={isAdvisor}
         onSignOut={() => supabase.auth.signOut()}
+        workspaceId={workspaceId as string}
       />
 
         <main className="flex-1 w-full p-4 sm:p-6 md:p-8 max-w-4xl overflow-x-auto">

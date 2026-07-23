@@ -9,6 +9,7 @@ interface Props {
   userEmail: string
   isAdvisor: boolean
   onSignOut: () => void
+  workspaceId: string 
 }
 
 export default function Sidebar({
@@ -17,12 +18,20 @@ export default function Sidebar({
   userEmail,
   isAdvisor,
   onSignOut,
+  workspaceId,
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   function handleNavigate(page: Page) {
     onNavigate(page)
     setMobileOpen(false)
+  }
+
+  function copyWorkspaceId() {
+    navigator.clipboard.writeText(workspaceId)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   return (
@@ -67,7 +76,7 @@ export default function Sidebar({
           md:translate-x-0
         `}
       >
-        <div className="flex items-center justify-between px-3 mb-6">
+        <div className="flex items-center justify-between px-3 mb-3">
           <div>
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
               ApplyFlow
@@ -89,6 +98,19 @@ export default function Sidebar({
             </svg>
           </button>
         </div>
+
+        <button
+          onClick={copyWorkspaceId}
+          title={workspaceId}
+          className="text-left mx-3 mb-4 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <p className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Workspace ID
+          </p>
+          <p className="text-xs font-mono text-gray-700 dark:text-gray-300 truncate max-w-45">
+            {copied ? 'Copied!' : workspaceId}
+          </p>
+        </button>
 
         <nav className="flex flex-col gap-1 flex-1">
           <NavButton
