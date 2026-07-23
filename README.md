@@ -10,9 +10,17 @@ ApplyFlow lets a job seeker track applications through a pipeline (Applied → R
 
 ## Screenshots
 
-| Login | Owner dashboard (Analytics) | Owner dashboard (Applications) | Advisor view |
-|---|---|---|---|
-| ![Login/Sign-up page](docs/screenshots/sign-up.png) | ![Owner dashboard](docs/screenshots/owner-page.png) | ![Owner applications page](docs/screenshots/owner-page-2.png) | ![Advisor view](docs/screenshots/advisor-page.png) |
+### Login
+![Login/Sign-up page](docs/screenshots/sign-up.png)
+
+### Owner dashboard — Analytics
+![Owner dashboard](docs/screenshots/owner-page.png)
+
+### Owner dashboard — Applications
+![Owner applications page](docs/screenshots/owner-page-2.png)
+
+### Advisor view
+![Advisor view](docs/screenshots/advisor-page.png)
 
 ## How it works
 
