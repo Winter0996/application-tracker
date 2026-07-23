@@ -135,41 +135,43 @@ function App() {
         workspaceId={workspaceId as string}
       />
 
-        <main className="flex-1 w-full p-4 sm:p-6 md:p-8 max-w-4xl overflow-x-auto">
-        {workspaceId ? (
-          <>
-            {page === 'analytics' && <Analytics applications={applications} />}
+<main className="flex-1 w-full p-4 sm:p-6 md:p-8 overflow-x-auto">
+  <div className="max-w-4xl mx-auto">
+    {workspaceId ? (
+      <>
+        {page === 'analytics' && <Analytics applications={applications} />}
 
-            {page === 'applications' && (
-              <>
-                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                  Applications
-                </h2>
-                {!isAdvisor && (
-                  <ApplicationForm
-                    workspaceId={workspaceId}
-                    userId={session.user.id}
-                    onAdded={loadApplications}
-                  />
-                )}
-                <ApplicationList
-                  applications={applications}
-                  onChanged={loadApplications}
-                  isAdvisor={isAdvisor}
-                  profileMap={profileMap}
-                  reminders={reminders}
-                  onReminderChanged={loadReminders}
-                />
-              </>
+        {page === 'applications' && (
+          <>
+            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              Applications
+            </h2>
+            {!isAdvisor && (
+              <ApplicationForm
+                workspaceId={workspaceId}
+                userId={session.user.id}
+                onAdded={loadApplications}
+              />
             )}
+            <ApplicationList
+              applications={applications}
+              onChanged={loadApplications}
+              isAdvisor={isAdvisor}
+              profileMap={profileMap}
+              reminders={reminders}
+              onReminderChanged={loadReminders}
+            />
           </>
-        ) : (
-          <p className="text-gray-500 dark:text-gray-400">
-            Setting up your workspace...
-          </p>
         )}
-      </main>
-    </div>
+      </>
+    ) : (
+      <p className="text-gray-500 dark:text-gray-400">
+        Setting up your workspace...
+      </p>
+    )}
+   </div>
+</main>
+  </div>
   )
 }
 
