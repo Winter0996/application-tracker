@@ -20,6 +20,7 @@ function App() {
   const [reminders, setReminders] = useState<Reminder[]>([])
   const [page, setPage] = useState<Page>('applications')
 
+  // Runs once on mount: applies saved theme, restores session, and subscribes to auth changes
   useEffect(() => {
     const stored = localStorage.getItem('theme')
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -41,6 +42,8 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+   // Whenever session changes (login/logout), figure out which workspace user belongs
+  // to and their role, then load applications/profiles/reminders for that workspace
   useEffect(() => {
     async function loadWorkspaceAndApplications() {
       if (!session) {
@@ -51,7 +54,7 @@ function App() {
         setReminders([])
         return
       }
-
+     
       const { data: memberRow, error: memberError } = await supabase
         .from('workspace_members')
         .select('workspace_id, role')
@@ -73,6 +76,7 @@ function App() {
     loadWorkspaceAndApplications()
   }, [session])
 
+  // RLS scopes this automatically: owners see only their own applications, advisors see everyone's
   async function loadApplications() {
     const { data, error } = await supabase
       .from('applications')

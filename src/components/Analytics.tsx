@@ -24,9 +24,13 @@ const STATUS_COLORS: Record<ApplicationStatus, string> = {
   rejected: '#898781',
 }
 
+// Dashboard showing response/interview/offer rates, a pipeline breakdown donut chart,
+// & a weekly application volume trend line
 export default function Analytics({ applications }: Props) {
   const total = applications.length
 
+   // Each entry carries its own `fill` color -- Recharts' Pie reads this directly per data point,
+  // avoiding need for the deprecated <Cell> component
   const statusCounts = STATUS_ORDER.map((status) => ({
     status,
     label: STATUS_LABELS[status],

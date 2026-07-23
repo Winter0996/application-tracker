@@ -9,7 +9,7 @@ interface Props {
   userEmail: string
   isAdvisor: boolean
   onSignOut: () => void
-  workspaceId: string 
+  workspaceId: string | null
 }
 
 export default function Sidebar({
@@ -23,12 +23,14 @@ export default function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // Navigating on mobile should also close the slide-in drawer
   function handleNavigate(page: Page) {
     onNavigate(page)
     setMobileOpen(false)
   }
 
   function copyWorkspaceId() {
+    if (!workspaceId) return
     navigator.clipboard.writeText(workspaceId)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
@@ -36,16 +38,12 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile top bar */}
+      {/* Mobile-only top bar with hamburger button; hidden entirely on md+ screens */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 sticky top-0 z-30">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
           ApplyFlow
         </h1>
-        <button
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-          className="p-2 -mr-2 text-gray-700 dark:text-gray-300"
-        >
+        <button onClick={() => setMobileOpen(true)} aria-label="Open menu" className="p-2 -mr-2 text-gray-700 dark:text-gray-300">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="21" y2="12" />
@@ -54,15 +52,13 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Mobile overlay */}
+      {/* Dark overlay behind the mobile drawer; clicking it closes the menu */}
       {mobileOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/40 z-40"
-          onClick={() => setMobileOpen(false)}
-        />
+        <div className="md:hidden fixed inset-0 bg-black/40 z-40" onClick={() => setMobileOpen(false)} />
       )}
 
-      {/* Sidebar: slide-in drawer on mobile, static column on desktop */}
+      {/* Slides in from the left on mobile (translate-x controlled by mobileOpen);
+          becomes a normal static sidebar column at the md breakpoint and above */}
       <div
         className={`
           fixed md:sticky top-0 left-0 z-50
@@ -87,11 +83,7 @@ export default function Sidebar({
               </p>
             )}
           </div>
-          <button
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close menu"
-            className="md:hidden p-1 text-gray-500 dark:text-gray-400"
-          >
+          <button onClick={() => setMobileOpen(false)} aria-label="Close menu" className="md:hidden p-1 text-gray-500 dark:text-gray-400">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -99,30 +91,23 @@ export default function Sidebar({
           </button>
         </div>
 
+        {/* Click-to-copy workspace ID -- handy for testing the "join existing workspace" signup flow */}
         <button
           onClick={copyWorkspaceId}
-          title={workspaceId}
+          title={workspaceId ?? ''}
           className="text-left mx-3 mb-4 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <p className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Workspace ID
           </p>
           <p className="text-xs font-mono text-gray-700 dark:text-gray-300 truncate max-w-45">
-            {copied ? 'Copied!' : workspaceId}
+            {copied ? 'Copied!' : workspaceId ?? 'Loading...'}
           </p>
         </button>
 
         <nav className="flex flex-col gap-1 flex-1">
-          <NavButton
-            label="Applications"
-            active={currentPage === 'applications'}
-            onClick={() => handleNavigate('applications')}
-          />
-          <NavButton
-            label="Analytics"
-            active={currentPage === 'analytics'}
-            onClick={() => handleNavigate('analytics')}
-          />
+          <NavButton label="Applications" active={currentPage === 'applications'} onClick={() => handleNavigate('applications')} />
+          <NavButton label="Analytics" active={currentPage === 'analytics'} onClick={() => handleNavigate('analytics')} />
         </nav>
 
         <div className="flex flex-col gap-1 pt-3 border-t border-gray-200 dark:border-gray-800">
@@ -130,10 +115,7 @@ export default function Sidebar({
           <p className="text-xs text-gray-500 dark:text-gray-400 px-3 pt-2 truncate">
             {userEmail}
           </p>
-          <button
-            onClick={onSignOut}
-            className="text-sm text-left text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
+          <button onClick={onSignOut} className="text-sm text-left text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
             Sign out
           </button>
         </div>

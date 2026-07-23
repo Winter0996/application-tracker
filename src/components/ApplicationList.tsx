@@ -12,6 +12,8 @@ interface Props {
   onReminderChanged: () => void
 }
 
+// Table of applications with an inline status dropdown and per-row reminder creation.
+// Shows an "Applicant" column when viewed by an advisor (who sees everyone's rows).
 export default function ApplicationList({
   applications,
   onChanged,
@@ -20,6 +22,7 @@ export default function ApplicationList({
   reminders,
   onReminderChanged,
 }: Props) {
+  // Tracks which row's reminder form is currently open (only one at a time)
   const [reminderFormOpenFor, setReminderFormOpenFor] = useState<string | null>(null)
   const [reminderDate, setReminderDate] = useState('')
   const [reminderMessage, setReminderMessage] = useState('')
@@ -50,6 +53,7 @@ export default function ApplicationList({
     onReminderChanged()
   }
 
+   // Finds the next unsent reminder for a given application, if one exists
   function upcomingReminderFor(applicationId: string) {
     return reminders.find((r) => r.application_id === applicationId && !r.sent_at)
   }
@@ -59,6 +63,7 @@ export default function ApplicationList({
   }
 
   return (
+     // overflow-x-auto lets the table scroll horizontally on narrow/mobile screens
     <div className="overflow-x-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg">
       <table className="w-full border-collapse min-w-160">
         <thead>

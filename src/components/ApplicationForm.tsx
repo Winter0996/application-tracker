@@ -7,6 +7,7 @@ interface Props {
   onAdded: () => void
 }
 
+// Form for creating a new application; new rows always start at 'applied' status
 export default function ApplicationForm({ workspaceId, userId, onAdded }: Props) {
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')

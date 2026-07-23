@@ -6,6 +6,7 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(true)
+  // 'new' creates a fresh workspaces (becomes owner); 'existing' joins one by ID (becomes advisor)
   const [joinMode, setJoinMode] = useState<'new' | 'existing'>('new')
   const [existingWorkspaceId, setExistingWorkspaceId] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,6 +37,7 @@ export default function Auth() {
         return
       }
 
+      // New members joining an existing workspace always come in as advisor
       const { error: memberError } = await supabase.from('workspace_members').insert({
         workspace_id: existingWorkspaceId.trim(),
         user_id: data.user.id,
@@ -48,6 +50,7 @@ export default function Auth() {
         return
       }
     } else {
+      // Create a brand-new workspace, then add this user as its owner
       const { data: workspace, error: workspaceError } = await supabase
         .from('workspaces')
         .insert({ name: `${email}'s Workspace` })

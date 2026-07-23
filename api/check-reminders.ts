@@ -12,6 +12,8 @@ interface DueReminder {
   }
 }
 
+// Called hourly by a GitHub Actions scheduled workflow.
+// Finds reminders that are due, emails the applicant via Resend, and marks them sent.
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const authHeader = req.headers.authorization
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -19,11 +21,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  // Uses service_role key, since this needs to read across all users, bypassing RLS
   const supabase = createClient(
     process.env.VITE_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
+  // Find reminders whose time has passed and haven't been sent yet
   const { data: dueReminders, error: fetchError } = await supabase
     .from('reminders')
     .select('id, message, remind_at, applications(company, role, owner_user_id)')
@@ -47,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const application = reminder.applications
   
     
-  
+      // Look up the applicant's email via the profiles table
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('email')
@@ -83,6 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       continue
     }
 
+     // Mark as sent so the next hourly run doesn't email the same reminder twice
     await supabase
       .from('reminders')
       .update({ sent_at: new Date().toISOString() })

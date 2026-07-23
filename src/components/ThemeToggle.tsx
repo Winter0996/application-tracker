@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 
 interface Props {
+   // compact = icon-only (used on the login page)
   compact?: boolean
 }
 
 export default function ThemeToggle({ compact = false }: Props) {
+  // On first load: use saved preference if one exists, otherwise fall back to OS setting
   const [isDark, setIsDark] = useState<boolean>(() => {
     const stored = localStorage.getItem('theme')
     if (stored) return stored === 'dark'
